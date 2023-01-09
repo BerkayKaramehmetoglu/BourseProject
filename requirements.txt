@@ -1,0 +1,6 @@
+Django
+pymongo==3.12.3
+djongo
+requests
+python-decouple
+pytz

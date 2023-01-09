@@ -1,0 +1,162 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block content %}
+    <table class="table table-hover mt-4 align-middle table-striped">
+        <thead>
+        <tr>
+            <td class="text-light">Ad</td>
+            <td class="text-light">Fiyat</td>
+            <td class="text-light">24 Saatlik
+                <small class="text-secondary opacity-75 ">Maks-Min</small>
+            </td>
+            {% if user.is_authenticated %}
+            <td class="text-end text-light">Detay</td>
+            {% endif %}
+        </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+    <script>
+
+        $(document).ready(function(){
+            mounted();
+        });
+
+        function mounted() {
+
+            create();
+            setInterval(function () {
+                fetch_data()
+            }, 50000);
+        }
+
+        function create() {
+            fetch(`http://${window.location.host}/data/`).then(function (result) {
+                return result.json();
+            }).then(function (result) {
+                let a = 0;
+                for (let coin in result) {
+                    let doc = `
+                        <tr>
+                            <td class="col-5">
+                                <img id="img_${a}" src="${result[coin].image}" alt="" class="col-sm-1">
+                                <span id="name_${a}" class="text-light fw-bold m-3 fs-5">${result[coin].name}
+                                    <small id="symbol_${a}">(${result[coin].symbol})</small>
+                                </span>
+                                <td class="text-light">
+                                    <span id="price_${a}" class="fs-5" >₺ ${result[coin].prices}</span>
+                                </td>
+                                <td class="">
+                                    <span id="momentary_up_${a}" class="text-success fs-5">⇧ ${result[coin].momentary_up}</span>
+                                <br>
+                                    <span id="momentary_down_${a}" class="text-danger fs-5">⇩ ${result[coin].momentary_down}</span>
+                                </td>
+                            </td>
+                            {% if user.is_authenticated %}
+                                <td>
+                                    <button type="button" class="btn float-end p-4 text-light fs-5 mt-1" onclick="$('#collapse_tr_${a}').collapse('toggle');">
+                                    ⇩
+                                    </button>
+                                </td>
+                            {% endif %}
+                        </tr>
+                        <tr id="collapse_tr_${a}" class="in collapse"><td><div><canvas id="canvas_${a}" width="1100" height="500"></canvas></div></td></tr>
+
+                    `
+                    document.querySelector('body > main > div > table > tbody').innerHTML += doc;
+
+                    let span = document.querySelector(`#price_${a}`);
+                    if (result[coin].state === 'raise') {
+                        span.classList.add('raise');
+                    } else if (result[coin].state === 'fall') {
+                        span.classList.add('fall');
+                    } else {
+                        span.classList.remove('raise');
+                        span.classList.remove('fall');
+                    }
+                    setTimeout(function(index) {
+                        chartjs(result[coin].history, `canvas_${index}`)
+                    }, 0.31, a);
+                    a++;
+                    if (a === 100) {
+                        break;
+                    }
+                }
+            })
+        }
+
+        function fetch_data() {
+            fetch(`http://${window.location.host}/data/`).then(function (result) {
+                return result.json();
+            }).then(function (result) {
+                let a = 0;
+                for (let coin in result) {
+                    let img = document.querySelector(`#img_${a}`);
+                    img.setAttribute('src', `${result[coin].image}`);
+                    let name = document.querySelector(`#name_${a}`);
+                    name.innerHTML = `${result[coin].name} <small id="symbol_${a}">(${result[coin].symbol})</small>`;
+                    document.querySelector(`#price_${a}`).innerHTML = `₺ ${result[coin].prices}`;
+                    document.querySelector(`#momentary_up_${a}`).innerHTML = `⇧ ${result[coin].momentary_up}`;
+                    document.querySelector(`#momentary_down_${a}`).innerHTML = `⇩ ${result[coin].momentary_down}`;
+
+                    let canvas = document.querySelector(`#canvas_${a}`);
+                    canvas.parentNode.removeChild(canvas);
+                    let new_canvas = document.createElement('canvas');
+                    new_canvas.setAttribute('id', `canvas_${a}`);
+                    new_canvas.setAttribute('width', '1100');
+                    new_canvas.setAttribute('height', '500');
+                    document.querySelector(`#collapse_tr_${a} > td > div`).appendChild(new_canvas);
+
+                    let span = document.querySelector(`#price_${a}`);
+                    if (result[coin].state === 'raise') {
+                        span.classList.add('raise');
+                    } else if (result[coin].state === 'fall') {
+                        span.classList.add('fall');
+                    } else {
+                        span.classList.remove('raise');
+                        span.classList.remove('fall');
+                    }
+                    setTimeout(function(index) {
+                        chartjs(result[coin].history, `canvas_${index}`)
+                    }, 0.31, a);
+                    a++;
+                    if (a === 100) {
+                        break;
+                    }
+                }
+            })
+        }
+
+
+        function chartjs(veri, ctx) {
+            let data = [];
+            let labels = [];
+            for (const property in veri) {
+                labels.push(property);
+                data.push(veri[property]);
+            }
+            new Chart(document.getElementById(ctx), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '24 Saatlik Grafik',
+                        data: data,
+                        fill: true,
+                        borderColor: 'rgb(3,213,241)',
+                        backgroundColor: 'rgba(3,213,241,0.13)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: false,
+                    scales: {
+                        y: {
+                            beginAtZero: false
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+{% endblock %}

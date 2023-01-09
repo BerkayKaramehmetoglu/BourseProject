@@ -1,0 +1,13 @@
+*{
+    font-family: 'Oxygen', sans-serif;
+}
+.fall{
+    color: red;
+}
+.raise{
+    color: limegreen;
+}
+.dropdown-menu {
+    max-height: 280px;
+    overflow-y: auto;
+}

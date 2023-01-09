@@ -1,0 +1,30 @@
+{% extends 'layout.html' %}
+{% load static %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-md-6 mx-auto mt-5">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h1 class="card-title text-light fw-bold text-capitalize fs-2">Üye Girişi</h1>
+                </div>
+            </div>
+            <div class="card bg-secondary my-2">
+                <div class="card-body">
+                    <form action="{% url 'giris' %}" method="POST">
+                        {% csrf_token %}
+                        <div class="form-group mx-auto mt-2">
+                            <label for="username" class="text-light fw-bold fs-5">Kullanıcı Adı:</label>
+                            <input type="text" name="username" class="form-control" required aria-label="" >
+                        </div>
+                        <div class="form-group mt-2">
+                            <label for="password" class="text-light fw-bold fs-5">Şifre:</label>
+                            <input type="password" name="password" class="form-control" aria-label="" required>
+                        </div>
+                        <button type="submit" class="btn btn-lg col-12 fw-bold bg-dark text-light mt-4 fs-5">Giriş Yap</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
