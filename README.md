@@ -1,2 +1,2 @@
-# BourseProject
+# BourseProject(Django)
  
